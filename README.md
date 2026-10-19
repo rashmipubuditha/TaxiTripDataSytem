@@ -121,19 +121,17 @@ Generated at run time (git-ignored): `.venv/`, `.env`, `Dataset_*/`, `reference/
 
 ## 4. Dataset choice
 
-Both 2023 (12 months) and 2026 (Jan–Aug) were profiled with the same cleaning rules. **2023 was chosen:**
+2023 (12 months) was chosen:
 
-| | 2023 (chosen) | 2026 |
+| | 2023 (chosen) |
 |---|---|---|
-| Coverage | Complete calendar year | 8 months, latest still subject to revision |
-| Rows rejected by cleaning | 2.94% | 4.28% |
-| True duplicates | 3 rows all year | 157,767 (two source defects) |
-| Unusable timestamps | none | every Helix (vendor 7) trip has pickup = drop-off |
-| Undocumented columns | none | `request_source` |
-| Matches the brief's example URL | yes (`yellow_tripdata_2023-01.parquet`) | no |
+| Coverage | Complete calendar year |
+| Rows rejected by cleaning | 2.94% |
+| True duplicates | 3 rows all year |
+| Unusable timestamps | none |
+| Undocumented columns | none |
 
 All 12 months give real seasonality and trends (e.g. the April airport-fee rise, a zero-distance spike in Sep–Nov).
-The same pipeline also handles 2026 files (schema drift, new columns) — see the optional demo in §12.
 
 Data definitions follow the official **TLC Data Dictionary – Yellow Taxi Trip Records (March 18, 2025)**.
 
@@ -394,33 +392,6 @@ All settings live in `.env` (created from `.env.example` by `setup.sh`). The mos
 - **"Automated"** = one command runs everything; a Prefect schedule is available with `--serve`.
 
 The full list (A1–A19), data-quality findings (Q1–Q18) and all measurements are in `ASSIGNMENT_1_PLAN.md`.
-
----
-
-## 12. Demo script
-
-```bash
-bash setup.sh                                   # 1. setup: re-run is fast, nothing re-downloaded
-mv Dataset_2023/yellow_tripdata_2023-08.parquet Dataset_2023/backup_2023-08.parquet
-bash setup.sh --months 2023-08                  #    curl re-downloads the "missing" month
-rm Dataset_2023/backup_2023-08.parquet          #    (identical file, so the backup can go)
-docker compose exec -T postgres psql -U taxi -d taxi_dw -c "\dt" -c "\d fact_taxi_trips"     # 2. star schema
-.venv/Scripts/python -m pipeline.flows --months 2023-08     # 3. one month through Prefect (~2 min) → watch the UI
-tail -n 5 logs/pipeline.jsonl                                # 4. structured logs
-docker compose exec -T postgres psql -U taxi -d taxi_dw -c "SELECT run_id, source_month, status, duration_seconds, rows_read, rows_loaded, rows_rejected FROM etl_pipeline_runs ORDER BY run_id DESC LIMIT 5"
-.venv/Scripts/python -m pipeline.flows --months 2023-08     # 5. re-run → identical counts (idempotent)
-.venv/Scripts/python -m pipeline.flows --months 2024-01     # 6. controlled failure → red run, FAILED row, CRITICAL alert
-.venv/Scripts/python -m pipeline.quality --months 2023-09   # 7. QC7 warning for September
-docker compose exec -T postgres psql -U taxi -d taxi_dw < sql/metrics.sql   # 8. the 3 metrics from SQL (Ctrl+C skips section 5)
-.venv/Scripts/streamlit run dashboard/app.py                # 9. dashboard — numbers match step 8
-```
-
-Talking points: why 2023 (§4) · weighted vs average-of-ratios fare per mile · why partitions and the set-based FK
-check (measured) · critical vs warning checks · the database-down case (retries are visible in Prefect; no run row
-can be written while the DB is down).
-
-**Optional robustness demo:** `bash setup.sh --months 2026-06 && .venv/Scripts/python -m pipeline.flows --months 2026-06`
-loads a 2026 month despite its new columns and data issues; the dashboard's year filter keeps it separate from 2023.
 
 ---
 
