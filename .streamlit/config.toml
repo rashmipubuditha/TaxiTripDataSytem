@@ -5,6 +5,14 @@ gatherUsageStats = false
 [server]
 port = 8501
 
+[client]
+# Minimal top-right menu (hides the "Deploy" button).
+toolbarMode = "minimal"
+
 [theme]
-# Palette blue (categorical slot 1) for widgets, so filters match the charts.
-primaryColor = "#2a78d6"
+# Light theme with the dashboard's design tokens (see dashboard/app.py).
+base = "light"
+primaryColor = "#1f63b8"            # accent blue (5.9:1 on white) for widgets and links
+backgroundColor = "#f5f6f8"         # page
+secondaryBackgroundColor = "#eef1f5" # inputs, sidebar widgets
+textColor = "#3d434d"               # body text (10:1 on white)

@@ -4,6 +4,8 @@ A local, automated batch pipeline that downloads NYC TLC yellow-taxi trip data, 
 loads it into a **PostgreSQL star schema**, and shows three business metrics on a
 **Streamlit** dashboard. Orchestrated with **Prefect**; every run is logged, checked and recorded.
 
+![Dashboard overview: cover banner and key figures — 37,184,597 trips, $1,075.38 M revenue, $5.61 per mile, peak hour 18:00](docs/images/dashboard-overview.jpg)
+
 **Dataset:** all 12 months of 2023 — 38,310,226 raw trips → **37,184,597 loaded** (2.94% rejected by cleaning rules).
 
 | Metric | Result (2023) |
@@ -104,11 +106,13 @@ pipeline/
   logging_config.py         Structured JSON logging with run context
   db.py, exceptions.py      Connections + fast COPY; custom error types
   dry_run.py                Extract + transform whole months without the database
-dashboard/app.py            Single-page Streamlit dashboard
+dashboard/app.py            Single-page Streamlit dashboard (Inter font, design tokens, cover photo)
+public/image.png            Cover photo shown in the dashboard header
 scripts/inspect_data.py     Re-runnable profile of the raw files
 scripts/start_prefect_server.sh   Local Prefect server (state in .prefect/)
 tests/                      78 tests (unit + integration on a throw-away taxi_test database)
 ASSIGNMENT_1_PLAN.md        Full design document: analysis, decisions, measurements
+docs/                       Project report and study guide (Word), dashboard screenshots (docs/images/)
 ```
 
 Generated at run time (git-ignored): `.venv/`, `.env`, `Dataset_*/`, `reference/`, `data/rejected/`, `logs/`, `.prefect/`.
@@ -272,10 +276,45 @@ others, and the parent flow then ends Failed; `python -m pipeline.flows --serve`
 docker compose exec -T postgres psql -U taxi -d taxi_dw < sql/metrics.sql
 ```
 
-**Dashboard** (`streamlit run dashboard/app.py`, http://localhost:8501): filters (year, quarter, months, payment
-types) → KPI cards → peak hours (bar + weekday × hour heatmap) → revenue by payment type (bars + table) → fare per
-mile per month (weighted vs median) → monthly trips and revenue → data tables → **pipeline health** (runs, rejects by
-reason, quality checks per month) → notes. Filter changes respond in ~0.6 s. A test proves the KPIs equal SQL on the fact table.
+**Dashboard** (`streamlit run dashboard/app.py`, http://localhost:8501). A cover banner (the photo in `public/`)
+is followed by six numbered sections, each with a plain-English insight computed from the data:
+
+1. **Overview:** KPI cards with sparklines (trips, revenue, fare per mile, peak hour, average trip).
+2. **Demand:** trips by hour, weekday × hour heatmap, weekday vs weekend.
+3. **Revenue:** by payment type, with trip share and average value per trip.
+4. **Pricing:** fare per mile by month and by hour of day.
+5. **Trends:** trips and revenue per month.
+6. **Data quality:** rows read, loaded and rejected; rejects by reason; a QC1–QC9 grid per month; run history.
+
+Design details:
+- Font: Inter (Google Fonts; falls back to the system font when offline).
+- Text colours are all at least 5.3:1 contrast; chart colours come from a validated colour-blind-safe palette.
+- Filters (year, quarter, months, payment types) are in the sidebar with section links, and apply to everything.
+- Filter changes respond in about 0.6 s. A test proves the KPIs equal SQL on the fact table.
+
+### Dashboard screenshots
+
+**1 · Overview:** cover banner and KPI cards with monthly sparklines (shown at the top of this README).
+
+**2 · Demand:** 18:00 is the busiest hour; weekends stay busy late at night, while weekdays peak sharply in the evening.
+
+![Demand section: trips by pickup hour, weekday × hour heatmap, weekday vs weekend](docs/images/dashboard-demand.png)
+
+**3 · Revenue:** credit cards bring 81.7% of revenue; a card trip averages $29.68 against $25.18 for cash.
+
+![Revenue section: revenue by payment type with detail table](docs/images/dashboard-revenue.png)
+
+**4 · Pricing:** $5.61 per mile overall (weighted); miles cost most around 11:00 ($6.01), when traffic is slow.
+
+![Pricing section: fare per mile by month and by pickup hour](docs/images/dashboard-pricing.png)
+
+**5 · Trends:** May was the busiest month and September the quietest.
+
+![Trends section: trips and revenue per month](docs/images/dashboard-trends.png)
+
+**6 · Data quality:** rows rejected by reason, and all nine checks per month (QC7 warnings for Sep–Nov 2023).
+
+![Data quality section: rejected rows by reason and quality-check grid](docs/images/dashboard-quality.png)
 
 ---
 
