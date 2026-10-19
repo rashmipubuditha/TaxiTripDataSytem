@@ -1,0 +1,16 @@
+# Pinned for Python 3.10 (versions verified with `pip index versions` on 2026-10-19).
+# Orchestration
+prefect==3.8.8
+# Reading Parquet + transforming
+pyarrow==25.0.1
+pandas==2.3.3
+# PostgreSQL access (psycopg 3 for fast COPY; SQLAlchemy for the dashboard)
+psycopg[binary]==3.3.6
+sqlalchemy==2.0.55
+# Configuration from .env
+python-dotenv==1.2.4
+# Dashboard
+streamlit==1.65.0
+plotly==7.1.0
+# Tests
+pytest==9.1.1

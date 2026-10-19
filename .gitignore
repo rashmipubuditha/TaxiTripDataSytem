@@ -1,0 +1,23 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Local configuration (contains the DB password)
+.env
+
+# Data (large, downloaded or provided locally)
+Dataset_*/
+reference/
+data/
+*.part
+
+# Logs
+logs/
+
+# Office lock files
+~$*
+
+# Prefect local server state
+.prefect/

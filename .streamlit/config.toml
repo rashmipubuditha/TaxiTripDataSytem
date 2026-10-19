@@ -1,0 +1,10 @@
+[browser]
+# Do not send usage statistics, and do not ask for an e-mail address on first run.
+gatherUsageStats = false
+
+[server]
+port = 8501
+
+[theme]
+# Palette blue (categorical slot 1) for widgets, so filters match the charts.
+primaryColor = "#2a78d6"

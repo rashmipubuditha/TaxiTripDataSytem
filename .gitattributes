@@ -1,0 +1,5 @@
+# Bash scripts must keep LF line endings or they fail with "$'\r': command not found".
+*.sh text eol=lf
+*.sql text eol=lf
+*.py text eol=lf
+.env.example text eol=lf

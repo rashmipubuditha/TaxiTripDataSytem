@@ -1,0 +1,36 @@
+# One PostgreSQL service for the star schema. Values come from .env (read automatically by Compose).
+# The schema is applied by setup.sh (sql/schema.sql), not by an init script, so changes are re-applied on every run.
+services:
+  postgres:
+    image: postgres:16
+    container_name: ${POSTGRES_CONTAINER:-taxi-postgres}
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    # Modest tuning for bulk loads on a laptop (Docker has ~8 GB RAM here).
+    command:
+      - postgres
+      - -c
+      - shared_buffers=512MB
+      - -c
+      - maintenance_work_mem=512MB
+      - -c
+      - work_mem=64MB
+      - -c
+      - max_wal_size=2GB
+    shm_size: 256mb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+    name: ${POSTGRES_VOLUME:-taxi_pgdata}
